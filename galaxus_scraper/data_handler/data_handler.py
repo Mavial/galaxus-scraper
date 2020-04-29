@@ -24,8 +24,8 @@ class DataHandler(object):
                 'img_url': self._get_image(article),
                 'discount_price': self._get_discount_price(article),
                 'regular_price': float(product_yaml['price']),
-                'tags': self._get_tag(article),
-                'type': self._get_type(article),
+                'type': self._get_tag(article),
+                'category': self._get_type(article),
                 'url': self._get_url(article),
             }
 
@@ -34,7 +34,7 @@ class DataHandler(object):
             except KeyError:
                 product['brand'] = "N/A"
 
-            product['discount'] = str(round((1-(product['discount_price']/product['regular_price']))*100, 2)) + ' %'
+            product['discount'] = round((1-(product['discount_price']/product['regular_price'])), 4)
             product_list.append(product)
         return product_list
 
@@ -85,7 +85,7 @@ class DataHandler(object):
         type_tag = article.find('span', class_='product-type').find('a')
         type_url = urlparse(self.response.url).netloc + type_tag['href']
         product_type = type_tag.text.replace('\n', '').replace('\r', '')
-        return [product_type, type_url]
+        return product_type #, type_url]
 
     def _get_url(self, article):
         return urlparse(self.response.url).netloc + article.find('a', class_='product-overlay')['href']
