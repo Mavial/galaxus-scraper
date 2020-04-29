@@ -58,5 +58,20 @@ pyvenv.cfg
 .venv
 pip-selfcheck.json
 
+# VS Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# Local History for Visual Studio Code
+.history/
+
 # Windows
-Thumbs.db
+Thumbs.
+
+# Other
+*.html
+*.hml

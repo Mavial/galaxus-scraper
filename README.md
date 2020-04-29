@@ -19,5 +19,8 @@ Beobachten einzelner Artikel
  - Scrape Artikel
  --Inclusive Preis / Bild URL
 
-
-
+### WICHTIG
+PEP 8 konform schreiben
+```sh
+[https://www.python.org/dev/peps/pep-0008/](https://www.python.org/dev/peps/pep-0008/)
+```
