@@ -10,8 +10,6 @@ class OffersSpider(scrapy.Spider):
 
     def __init__(self, settings, *args, **kwargs):
         super(OffersSpider, self).__init__(*args, **kwargs)
-        self.logger = logging.getLogger(__name__)
-        # self.logger.basicConfig(level=logging.INFO)
         self.settings = settings
 
     @classmethod
