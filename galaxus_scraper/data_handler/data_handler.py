@@ -18,8 +18,8 @@ class DataHandler(object):
         product_list = []
         for article in article_list:
             product_yaml = self._get_product_yaml(article)
-
             product = {
+                'id': product_yaml['id'],
                 'name': product_yaml['name'],
                 'img_url': self._get_image(article),
                 'discount_price': self._get_discount_price(article),
@@ -83,7 +83,7 @@ class DataHandler(object):
 
     def _get_type(self, article):
         type_tag = article.find('span', class_='product-type').find('a')
-        type_url = urlparse(self.response.url).netloc + type_tag['href']
+        # type_url = urlparse(self.response.url).netloc + type_tag['href']
         product_type = type_tag.text.replace('\n', '').replace('\r', '')
         return product_type #, type_url]
 
