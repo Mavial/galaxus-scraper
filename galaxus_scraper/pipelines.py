@@ -31,7 +31,7 @@ class SQLitePipeline(object):
             self.c = self.conn.cursor()
             self.c.execute('''SELECT count(name) FROM sqlite_master WHERE type='table' AND name='article_offers';''')
             if self.c.fetchone()[0] == 0:
-                self.c.execute('''CREATE TABLE article_offers (name text, brand text, url text, img_url text, discount_price real, regular_price real, discount real, type text, category text)''')
+                self.c.execute('''CREATE TABLE article_offers (id INTEGER NOT NULL PRIMARY KEY, name TEXT, brand TEXT, url TEXT, img_url TEXT, discount_price REAL, regular_price REAL, discount REAL, category TEXT, type TEXT)''')
         except Exception as e:
             print(e)
 
@@ -41,7 +41,7 @@ class SQLitePipeline(object):
 
     def process_item(self, item, spider):
         try:
-            sql_query = f'''INSERT INTO article_offers VALUES ('{item['name']}', '{item['brand']}', '{item['url']}', '{item['img_url']}', '{item['discount_price']}', '{item['regular_price']}', '{item['discount']}', '{item['type']}', '{item['category']}')'''
+            sql_query = f'''INSERT INTO article_offers VALUES ('{item['id']}', '{item['name']}', '{item['brand']}', '{item['url']}', '{item['img_url']}', '{item['discount_price']}', '{item['regular_price']}', '{item['discount']}', '{item['category']}', '{item['type']}')'''
             self.c.execute(sql_query)
         except Exception as e:
             print(e)

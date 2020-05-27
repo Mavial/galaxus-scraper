@@ -22,7 +22,7 @@ NEWSPIDER_MODULE = 'galaxus_scraper.spiders'
 ROBOTSTXT_OBEY = True
 
 # Enable Scrapy Log
-LOG_ENABLED = False
+LOG_ENABLED = True
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 #CONCURRENT_REQUESTS = 32
