@@ -1,8 +1,5 @@
 import scrapy
 import logging
-from pprint import pprint
-
-from galaxus_scraper.data_handler import DataHandler
 
 
 class OffersSpider(scrapy.Spider):
@@ -15,20 +12,14 @@ class OffersSpider(scrapy.Spider):
     @classmethod
     def from_crawler(cls, crawler, *args, **kwargs):
         return cls(
-            settings = crawler.settings,
-            crawler = crawler
+            settings=crawler.settings,
+            crawler=crawler
         )
 
+    # the 'take=' needs to be set dynamically to the amount of articles currently on offer.
     start_urls = [
-        f'https://www.galaxus.de/de/secondhand?so=16&take=2000',
+        f'https://www.galaxus.de/de/secondhand?so=16&take=1000',
     ]
 
     def parse(self, response):
-
-        data_handler = DataHandler(response, self.settings)
-
-        product_list = data_handler.get_products()
-
-        # pprint(product_list)
-        # pprint(len(product_list))
-        return product_list
+        return {'response': response, }
