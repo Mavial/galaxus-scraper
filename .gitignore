@@ -77,3 +77,4 @@ Thumbs.
 *.html
 *.hml
 *.db
+.env

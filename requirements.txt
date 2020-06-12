@@ -1,3 +1,5 @@
 scrapy
 bs4
 pyyaml
+mysql
+env-file

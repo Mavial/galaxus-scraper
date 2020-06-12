@@ -7,13 +7,15 @@
 
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse
+from datetime import datetime
 import yaml
 
+import MySQLdb
 import sqlite3
 
 
 class GalaxusScraperPipeline:
-    # NOTE: The goal is to compress all important data from the products article page into a single json.
+    # TMFS: The goal is to compress all important data from the products article page into a single json.
     #       Some of the data needs to be gathered from different tags, through different methods which are found in the functions below.
     #       Thankfully a lot of the data is stored in a yaml string probably used for ad-tracking and cookies.
     #       Finally the actual discount is calculated manually.
@@ -111,46 +113,82 @@ class GalaxusScraperPipeline:
         return urlparse(response.url).netloc + article.find('a', class_='product-overlay')['href']
 
 
-class SQLitePipeline(object):
-    # NOTE: This pipeline takes the json list created by GalaxusScraperPipeline and commits them to articles.db
+class SQLPipeline(object):
+    # TMFS: This pipeline takes the json list created by GalaxusScraperPipeline and commits them to articles.db
     # TODO:
     #   - delete rows containing articles that have been taken down from the site
     #   - update rows with articles that have been added contain changed data
-    #   - a secondary tables to the database to track price changes
-    def __init__(self):
-        self.sqlite_db = 'articles.db'
-        # self.sqlite_db = sqlite_db
-        # self.sqlite_coll = sqlite_coll
+    #   - add secondary tables to the database to track price changes
+    def __init__(self, settings):
+        self.DB_TYPE = settings.get('DB_TYPE')
+        self.SQLITE_FILE = settings.get('SQLITE_FILE')
+        self.MYSQL_URL = settings.get('MYSQL_URL')
+        self.MYSQL_DB = settings.get('MYSQL_DB')
+        self.MYSQL_USER = settings.get('MYSQL_USER')
+        self.MYSQL_PASSWORD = settings.get('MYSQL_PASSWORD')
 
-    # @classmethod
-    # def from_crawler(cls, crawler):
-    #     return cls(
-
-    #     )
+    @classmethod
+    def from_crawler(cls, crawler):
+        return cls(
+            settings=crawler.settings,
+        )
 
     def open_spider(self, spider):
-        try:
-            self.conn = sqlite3.connect(self.sqlite_db)
-            self.c = self.conn.cursor()
-            self.c.execute(
-                '''SELECT count(name) FROM sqlite_master WHERE type='table' AND name='article_offers';''')
-            if self.c.fetchone()[0] == 0:
-                self.c.execute('''CREATE TABLE article_offers (id INTEGER NOT NULL PRIMARY KEY, name TEXT, brand TEXT, url TEXT, img_url TEXT, discount_price REAL, regular_price REAL, discount REAL, category TEXT, type TEXT)''')
-        except Exception as e:
-            print('There has been an exception while starting the SQLite Pipeline ' + e)
+
+        # TMFS: I'm trying to allow different SQL db types because I'm a nice guy. Thus below there are different connection methods.
+        #       The end result is a cursor at self.c that should work the same for all databases.
+        #       Currently its just SQLite and MySQL but maybe if I feel like it, just because im that cool of a person I'll add some more. I don't see a reason why though..
+
+        if self.DB_TYPE == 'sqlite':
+
+            # NOTE: This is close to fucking hardcoding, I should not have duplicate code but someone else fix it thanks.
+
+            try:
+                self.conn = sqlite3.connect(self.SQLITE_FILE)
+                self.c = self.conn.cursor()
+                self.c.execute(
+                    '''SELECT count(name) FROM sqlite_master WHERE type='table' AND name='article_offers';''')
+                if self.c.fetchone()[0] == 0:
+                    self.c.execute(
+                        '''CREATE TABLE article_offers (id INTEGER NOT NULL PRIMARY KEY, name TEXT, brand TEXT, url TEXT,
+                            img_url TEXT, discount_price REAL, regular_price REAL, discount REAL, category TEXT, type TEXT, lastModified DATETIME, addedAt DATETIME)''')
+            except Exception as e:
+                print(
+                    'There has been an exception while starting the SQLite Pipeline: ', end='')
+                print(e)
+        elif self.DB_TYPE == 'mysql':
+            # NOTE: This isn't working yet, the current problem is checking if a db table is present and create it if not. Its 4am. Gn
+
+            try:
+                self.conn = MySQLdb.connect(
+                    self.MYSQL_URL, self.MYSQL_USER, self.MYSQL_PASSWORD, self.MYSQL_DB)
+                self.c = self.conn.cursor()
+                self.c.execute(
+                    '''CREATE TABLE article_offers (id INTEGER NOT NULL PRIMARY KEY, name TEXT, brand TEXT, url TEXT,
+                            img_url TEXT, discount_price REAL, regular_price REAL, discount REAL, category TEXT, type TEXT, lastModified DATETIME, addedAt DATETIME)''')
+                # self.c.execute(
+                #     '''SELECT count(name) FROM information_schema.tables WHERE type='table' AND name='article_offers';''')
+            except Exception as e:
+                if e.args[0] != 1050:
+                    print(
+                        'There has been an exception while connecting to the MySQL Database: ', end='')
+                    print(e)
 
     def close_spider(self, spider):
         self.conn.commit()
         self.conn.close()
 
     def process_item(self, item, spider):
+        now = datetime.now()
         for product in item:
             try:
-                sql_query = f'''INSERT INTO article_offers VALUES ('{product['id']}', '{product['name']}', '{product['brand']}', '{product['url']}', '{product['img_url']}', '{product['discount_price']}', '{product['regular_price']}', '{product['discount']}', '{product['category']}', '{product['type']}')'''
+                sql_query = f'''INSERT INTO article_offers VALUES ('{product['id']}', '{product['name']}', '{product['brand']}', '{product['url']}', '{product['img_url']}',
+                    '{product['discount_price']}', '{product['regular_price']}', '{product['discount']}', '{product['category']}', '{product['type']}', '{now}', '{now}')'''
                 self.c.execute(sql_query)
             except sqlite3.IntegrityError:
                 print(
                     product['name'] + ' is already present in the database, adjusting values.')
                 # Here is where I adjust the values. cba rn.
             except Exception as e:
-                print('An SQLLite Pipeline has caused an exception: ' + e)
+                print('The SQLPipeline has caused an exception: ', end='')
+                print(e)

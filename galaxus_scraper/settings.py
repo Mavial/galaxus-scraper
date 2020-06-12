@@ -9,11 +9,27 @@
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
+from os import getenv
+
 BOT_NAME = 'galaxus_scraper'
 
 SPIDER_MODULES = ['galaxus_scraper.spiders']
 NEWSPIDER_MODULE = 'galaxus_scraper.spiders'
 
+
+# CUSTOM SETTINGS
+
+# Select the type of database to be used. (Current Options: sqlite, mysql)
+DB_TYPE = 'mysql'
+
+# SQLite Settings
+SQLITE_FILE = 'articles.db'
+
+# MYSQL Settings
+MYSQL_URL = getenv('MYSQL_URL')
+MYSQL_DB = getenv('MYSQL_DB')
+MYSQL_USER = getenv('MYSQL_USER')
+MYSQL_PASSWORD = getenv('MYSQL_PASSWORD')
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'galaxus_scraper (+http://www.yourdomain.com)'
@@ -69,7 +85,7 @@ LOG_ENABLED = True
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
    'galaxus_scraper.pipelines.GalaxusScraperPipeline': 300,
-   'galaxus_scraper.pipelines.SQLitePipeline': 500,
+   'galaxus_scraper.pipelines.SQLPipeline': 500,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
