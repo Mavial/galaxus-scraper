@@ -9,6 +9,7 @@ from bs4 import BeautifulSoup
 from urllib.parse import urlparse
 from datetime import datetime
 import yaml
+import logging
 
 import MySQLdb
 import sqlite3
@@ -120,6 +121,7 @@ class SQLPipeline(object):
     #   - update rows with articles that have been added contain changed data
     #   - add secondary tables to the database to track price changes
     def __init__(self, settings):
+        self.logger = logging.getLogger(__name__)
         self.DB_TYPE = settings.get('DB_TYPE')
         self.SQLITE_FILE = settings.get('SQLITE_FILE')
         self.MYSQL_URL = settings.get('MYSQL_URL')
@@ -153,10 +155,10 @@ class SQLPipeline(object):
                         '''CREATE TABLE article_offers (id INTEGER NOT NULL PRIMARY KEY, name TEXT, brand TEXT, url TEXT,
                             img_url TEXT, discount_price REAL, regular_price REAL, discount REAL, category TEXT, type TEXT, lastModified DATETIME, addedAt DATETIME)''')
             except Exception as e:
-                print(
-                    'There has been an exception while starting the SQLite Pipeline: ', end='')
-                print(e)
+                self.logger.error(
+                    'There has been an exception while starting the SQLite Pipeline: ' + e)
         elif self.DB_TYPE == 'mysql':
+
             # NOTE: This isn't working yet, the current problem is checking if a db table is present and create it if not. Its 4am. Gn
 
             try:
@@ -166,13 +168,11 @@ class SQLPipeline(object):
                 self.c.execute(
                     '''CREATE TABLE article_offers (id INTEGER NOT NULL PRIMARY KEY, name TEXT, brand TEXT, url TEXT,
                             img_url TEXT, discount_price REAL, regular_price REAL, discount REAL, category TEXT, type TEXT, lastModified DATETIME, addedAt DATETIME)''')
-                # self.c.execute(
-                #     '''SELECT count(name) FROM information_schema.tables WHERE type='table' AND name='article_offers';''')
             except Exception as e:
                 if e.args[0] != 1050:
-                    print(
-                        'There has been an exception while connecting to the MySQL Database: ', end='')
-                    print(e)
+                    self.logger.critical(
+                        'There has been an exception while connecting to the MySQL Database: ' + e.args[0])
+                        # quit()
 
     def close_spider(self, spider):
         self.conn.commit()
@@ -186,9 +186,13 @@ class SQLPipeline(object):
                     '{product['discount_price']}', '{product['regular_price']}', '{product['discount']}', '{product['category']}', '{product['type']}', '{now}', '{now}')'''
                 self.c.execute(sql_query)
             except sqlite3.IntegrityError:
-                print(
-                    product['name'] + ' is already present in the database, adjusting values.')
+                self.logger.debug(product['id'] + ' ' + product['name'] +
+                                 ' is already present in the database, adjusting values.')
                 # Here is where I adjust the values. cba rn.
             except Exception as e:
-                print('The SQLPipeline has caused an exception: ', end='')
-                print(e)
+                if e.args[0] == 1062:
+                    self.logger.debug(product['id'] + ' ' + product['name'] +
+                                     ' is already present in the database, adjusting values.')
+                    # Here is where I adjust the values. cba rn.
+                else:
+                    self.logger.warning(e)

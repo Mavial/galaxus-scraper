@@ -19,6 +19,9 @@ NEWSPIDER_MODULE = 'galaxus_scraper.spiders'
 
 # CUSTOM SETTINGS
 
+# Python logger settings
+PYTHON_LOG_LEVEL = 'INFO'
+
 # Select the type of database to be used. (Current Options: sqlite, mysql)
 DB_TYPE = 'mysql'
 
@@ -38,7 +41,7 @@ MYSQL_PASSWORD = getenv('MYSQL_PASSWORD')
 ROBOTSTXT_OBEY = True
 
 # Enable Scrapy Log
-LOG_ENABLED = True
+LOG_ENABLED = False
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 #CONCURRENT_REQUESTS = 32
