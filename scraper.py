@@ -8,18 +8,19 @@ from scrapy.crawler import CrawlerProcess
 import env_file
 
 
-def main():
-    env_file.load()
-    process = CrawlerProcess(get_project_settings())
+def main(settings):
+    process = CrawlerProcess(settings)
     process.crawl(galaxus_scraper.OffersSpider)
     process.start()
 
 
 if __name__ == '__main__':
     try:
-        galaxus_scraper.InitLogging()
+        env_file.load()
+        settings = get_project_settings()
+        galaxus_scraper.InitLogging(settings['PYTHON_LOG_LEVEL'])
         logger = logging.getLogger(__name__)
 
-        main()
+        main(settings)
     except Exception as e:
         print(e)

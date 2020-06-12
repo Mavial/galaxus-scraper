@@ -19,6 +19,9 @@ NEWSPIDER_MODULE = 'galaxus_scraper.spiders'
 
 # CUSTOM SETTINGS
 
+# Python logger settings
+PYTHON_LOG_LEVEL = 'INFO'
+
 # Select the type of database to be used. (Current Options: sqlite, mysql)
 DB_TYPE = 'mysql'
 
