@@ -9,6 +9,7 @@ from bs4 import BeautifulSoup
 from urllib.parse import urlparse
 from datetime import datetime
 import yaml
+import logging
 
 import MySQLdb
 import sqlite3
@@ -120,6 +121,7 @@ class SQLPipeline(object):
     #   - update rows with articles that have been added contain changed data
     #   - add secondary tables to the database to track price changes
     def __init__(self, settings):
+        self.logger = logging.getLogger(__name__)
         self.DB_TYPE = settings.get('DB_TYPE')
         self.SQLITE_FILE = settings.get('SQLITE_FILE')
         self.MYSQL_URL = settings.get('MYSQL_URL')
@@ -190,5 +192,5 @@ class SQLPipeline(object):
                     product['name'] + ' is already present in the database, adjusting values.')
                 # Here is where I adjust the values. cba rn.
             except Exception as e:
-                print('The SQLPipeline has caused an exception: ', end='')
+                self.logger.error('The SQLPipeline has caused an exception: ', end='')
                 print(e)

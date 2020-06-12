@@ -38,7 +38,7 @@ MYSQL_PASSWORD = getenv('MYSQL_PASSWORD')
 ROBOTSTXT_OBEY = True
 
 # Enable Scrapy Log
-LOG_ENABLED = True
+LOG_ENABLED = False
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 #CONCURRENT_REQUESTS = 32
