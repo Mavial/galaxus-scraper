@@ -20,7 +20,7 @@ NEWSPIDER_MODULE = 'galaxus_scraper.spiders'
 # CUSTOM SETTINGS
 
 # Select the type of database to be used. (Current Options: sqlite, mysql)
-DB_TYPE = 'sqlite'
+DB_TYPE = 'mysql'
 
 # SQLite Settings
 SQLITE_FILE = 'articles.db'

@@ -7,6 +7,7 @@
 
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse
+from datetime import datetime
 import yaml
 
 import MySQLdb
@@ -150,7 +151,7 @@ class SQLPipeline(object):
                 if self.c.fetchone()[0] == 0:
                     self.c.execute(
                         '''CREATE TABLE article_offers (id INTEGER NOT NULL PRIMARY KEY, name TEXT, brand TEXT, url TEXT,
-                            img_url TEXT, discount_price REAL, regular_price REAL, discount REAL, category TEXT, type TEXT)''')
+                            img_url TEXT, discount_price REAL, regular_price REAL, discount REAL, category TEXT, type TEXT, lastModified DATETIME, addedAt DATETIME)''')
             except Exception as e:
                 print(
                     'There has been an exception while starting the SQLite Pipeline: ', end='')
@@ -163,25 +164,26 @@ class SQLPipeline(object):
                     self.MYSQL_URL, self.MYSQL_USER, self.MYSQL_PASSWORD, self.MYSQL_DB)
                 self.c = self.conn.cursor()
                 self.c.execute(
-                    '''SELECT count(name) FROM information_schema.tables WHERE type='table' AND name='article_offers';''')
-                if self.c.fetchone()[0] == 0:
-                    self.c.execute(
-                        '''CREATE TABLE article_offers (id INTEGER NOT NULL PRIMARY KEY, name TEXT, brand TEXT, url TEXT,
-                            img_url TEXT, discount_price REAL, regular_price REAL, discount REAL, category TEXT, type TEXT)''')
+                    '''CREATE TABLE article_offers (id INTEGER NOT NULL PRIMARY KEY, name TEXT, brand TEXT, url TEXT,
+                            img_url TEXT, discount_price REAL, regular_price REAL, discount REAL, category TEXT, type TEXT, lastModified DATETIME, addedAt DATETIME)''')
+                # self.c.execute(
+                #     '''SELECT count(name) FROM information_schema.tables WHERE type='table' AND name='article_offers';''')
             except Exception as e:
-                print(
-                    'There has been an exception while connecting to the MySQL Database: ', end='')
-                print(e)
+                if e.args[0] != 1050:
+                    print(
+                        'There has been an exception while connecting to the MySQL Database: ', end='')
+                    print(e)
 
     def close_spider(self, spider):
         self.conn.commit()
         self.conn.close()
 
     def process_item(self, item, spider):
+        now = datetime.now()
         for product in item:
             try:
                 sql_query = f'''INSERT INTO article_offers VALUES ('{product['id']}', '{product['name']}', '{product['brand']}', '{product['url']}', '{product['img_url']}',
-                    '{product['discount_price']}', '{product['regular_price']}', '{product['discount']}', '{product['category']}', '{product['type']}')'''
+                    '{product['discount_price']}', '{product['regular_price']}', '{product['discount']}', '{product['category']}', '{product['type']}', '{now}', '{now}')'''
                 self.c.execute(sql_query)
             except sqlite3.IntegrityError:
                 print(
